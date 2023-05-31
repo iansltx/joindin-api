@@ -7,6 +7,7 @@ use Joindin\Api\Controller\TalkLinkController;
 use Joindin\Api\Controller\TalksController;
 use Joindin\Api\Model\PendingTalkClaimMapper;
 use Joindin\Api\Model\TalkMapper;
+use Joindin\Api\Model\TalkModel;
 use Joindin\Api\Model\TalkModelCollection;
 use Joindin\Api\Model\UserMapper;
 use Joindin\Api\Request;
@@ -910,8 +911,8 @@ final class TalksControllerTest extends TalkBase
             /**
              * @param array $config
              * @param array $recipients
-             * @param string $talk
-             * @param string $comment
+             * @param TalkModel $talk
+             * @param array $comment
              * @return TalkCommentEmailService
              */
             public function getTalkCommentEmailService($config, $recipients, $talk, $comment): TalkCommentEmailService

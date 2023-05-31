@@ -11,6 +11,7 @@ use Joindin\Api\Model\LanguageMapper;
 use Joindin\Api\Model\PendingTalkClaimMapper;
 use Joindin\Api\Model\TalkCommentMapper;
 use Joindin\Api\Model\TalkMapper;
+use Joindin\Api\Model\TalkModel;
 use Joindin\Api\Model\TalkModelCollection;
 use Joindin\Api\Model\TalkTypeMapper;
 use Joindin\Api\Service\SpamCheckServiceInterface;
@@ -100,6 +101,9 @@ class TalksController extends BaseTalkController
         /** @var TalkMapper $mapper */
         $mapper = $this->getMapper('talk');
         $talks  = $mapper->getTalksByTitleSearch($keyword, $resultsperpage, $start);
+        if (!$talks) {
+            return [];
+        }
 
         return $talks->getOutputView($this->request, $verbose);
     }
@@ -137,7 +141,7 @@ class TalksController extends BaseTalkController
                     /** @var TalkCommentMapper $comment_mapper */
                     $comment_mapper = $this->getMapper('talkcomment', $db, $request);
 
-                    $data['user_id'] = $request->user_id;
+                    $data['user_id'] = $request->user_id ?? 0;
                     $data['talk_id'] = $talk_id;
                     $data['comment'] = $comment;
                     $data['rating']  = $rating;
@@ -769,8 +773,12 @@ class TalksController extends BaseTalkController
         $view->setResponseCode(Http::NO_CONTENT);
     }
 
-    public function getTalkCommentEmailService($config, $recipients, $talk, $comment): TalkCommentEmailService
-    {
+    public function getTalkCommentEmailService(
+        array $config,
+        array $recipients,
+        TalkModel $talk,
+        array $comment
+    ): TalkCommentEmailService {
         return new TalkCommentEmailService($config, $recipients, $talk, $comment);
     }
 
@@ -784,6 +792,10 @@ class TalksController extends BaseTalkController
         $event_id     = $talk->event_id;
         $event_mapper = $this->getEventMapper($db, $request);
         $event        = $event_mapper->getEventById($event_id);
+
+        if (!$event) {
+            throw new Exception('Invalid event id', Http::BAD_REQUEST);
+        }
 
         $is_admin = $talk_mapper->thisUserHasAdminOn($talk_id);
 
